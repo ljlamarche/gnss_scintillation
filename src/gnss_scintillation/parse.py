@@ -21,10 +21,14 @@ class ParseNovatel:
         self.tstmp_tow = list()
         self.tstmp_tec_wnc = list()
         self.tstmp_tec_tow = list()
+        self.tstmp_pos_wnc = list()
+        self.tstmp_pos_tow = list()
         self.phase = {prn:list() for prn in range(32)}
         self.power = {prn:list() for prn in range(32)}
         self.tec = {prn:list() for prn in range(32)}
         self.dtec = {prn:list() for prn in range(32)}
+        self.azimuth = {prn:list() for prn in range(32)}
+        self.elevation = {prn:list() for prn in range(32)}
     
         with gzip.open(filename, 'rb') as f:
     
@@ -54,7 +58,17 @@ class ParseNovatel:
                         self.power[prn].extend(pwr[prn-1,:])
                         self.tec[prn].append(tec0[prn-1])
                         self.dtec[prn].append(dtec0[prn-1])
+
+                elif block_id == 274:
+                    az, el = self.read274(f)
+                    
+                    self.tstmp_pos_wnc.append(wnc)
+                    self.tstmp_pos_tow.append(tow)
         
+                    for prn in range(32):
+                        self.azimuth[prn].append(az[prn-1])
+                        self.elevation[prn].append(el[prn-1])
+
                 else:
                     # skip block
                     f.read(block_length)
@@ -116,7 +130,36 @@ class ParseNovatel:
         f.read(4)
         
         return adr, pwr, tec, dtec
-    
+
+    def read274(self, f):
+        
+        # read nubmer of PRNs
+        data = f.read(4)
+        N, = unpack('=i', data)
+
+        azimuth = np.full((32,), np.nan)
+        elevation = np.full((32,), np.nan)
+
+        # cycle through each prn
+        for _ in range(N):
+            data = f.read(12)
+            prn, _, az, el = unpack('=hhff', data)
+
+            azimuth[prn-1] = az
+            elevation[prn-1] = el
+
+            data = f.read(80)
+            CN0, S4, corrS4, sig1, sig3, sig10, sig30, sig60, _, _ = unpack('=dddddddddd', data)
+
+            data = f.read(32)
+            tec45, dtec45, tec30, dtec30, tec15, dtec15, tec0, dtec0 = unpack('=ffffffff', data)
+
+            data = f.read(28)
+            L1lock, status, L2lock, L2CN0 = unpack('=didd', data)
+
+        f.read(4)
+        
+        return azimuth, elevation
 
 #def summary_plot(filename):
 #    import matplotlib.pyplot as plt
