@@ -78,6 +78,19 @@ def calc_ipp(site, satellite, satcoords='azel', height=300.):
 
     return lat, lon
 
+
+
+# Add method for converting between PRN, SVN, NORAD_ID, COSPAR_ID, ect
+# Most of the reference tables to do this are contained within this file, which is presumably updated as needed
+# https://files.igs.org/pub/station/general/igs_satellite_metadata.snx?_gl=1*1mnhzza*_ga*MTE5MzExNzMyOC4xNzQwNDU4ODE0*_ga_Z5RH7R682C*MTc0MDQ1ODgxNC4xLjEuMTc0MDQ2MDA5OS40NC4wLjA.&_ga=2.10007349.1451599704.1740458815-1193117328.1740458814
+# This is the IGS satellite metadata file, which can be downloaded from this website:
+# https://igs.org/mgex/metadata/
+# This method would either have to pull from the file over the web or keep a local downloaded version that woudl periodically have to be updated
+# Updates should only be necessary when satellites are reassigned or swaped out of the GPS constellation, which should only happen once every couple of years
+
+
+
+
 #def gaussiran_method(site, az, el, height=300.):
 #
 #    lat0, lon0, alt0 = site
